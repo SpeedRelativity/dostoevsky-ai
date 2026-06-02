@@ -8,6 +8,8 @@ from langchain_google_genai import GoogleGenerativeAIEmbeddings
 from langchain_community.vectorstores import SupabaseVectorStore
 from supabase import create_client
 
+from concurrent.futures import ThreadPoolExecutor, as_completed
+
 import time
 
 
@@ -26,7 +28,7 @@ def split__documents(documents, chunk_size=1000, chunk_overlap=150):
     print(f"Split into {len(chunks)} chunks.")
     return chunks
 
-def createEmbeddings(chunks, batch_size=25):
+def createEmbeddings(chunks, batch_size=250):
     
     # First I'll create the client.
     url = os.getenv("SUPABASE_URL")
@@ -40,22 +42,22 @@ def createEmbeddings(chunks, batch_size=25):
         google_api_key=os.getenv("GOOGLE_API_KEY"))
     
     # Finally, I can create the vector store, I need to batch though so a for loop with wait timer.
-
+    
+    
     for i in range(0, len(chunks), batch_size):
-        batch = chunks[i:i+batch_size]
+        batch = chunks[i:i+batch_size] 
         vector_store = SupabaseVectorStore.from_documents(
-        documents=batch,
-        embedding=embedding_model,
-        client=supabase_client,
-        table_name="documents",
-        query_name="match_documents"
-        )
+            documents=batch,
+            embedding=embedding_model,
+            client=supabase_client,
+            table_name="documents",
+            query_name="match_documents"
+            )
         print(f"Processed batch {i//batch_size + 1} of {len(chunks)//batch_size + 1}")
-        time.sleep(2) # to avoid rate limits
-        
-    
+        time.sleep(3)
     
 
+        
     return vector_store
 
 
@@ -69,7 +71,7 @@ def main():
     # chunking the files
     print("Splitting documents into chunks...")
     chunks = split__documents(documents)
-    chunks = chunks[0:50] # for testing, rate limit.
+    # chunks = chunks[0:50] # for testing, rate limit.
 
     # embedding
     print("Creating embeddings and storing in vector database...")
