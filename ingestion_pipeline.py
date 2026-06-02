@@ -26,7 +26,7 @@ def split__documents(documents, chunk_size=1000, chunk_overlap=150):
     print(f"Split into {len(chunks)} chunks.")
     return chunks
 
-def createEmbeddings(chunks, batch_size=50):
+def createEmbeddings(chunks, batch_size=25):
     
     # First I'll create the client.
     url = os.getenv("SUPABASE_URL")
@@ -51,7 +51,7 @@ def createEmbeddings(chunks, batch_size=50):
         query_name="match_documents"
         )
         print(f"Processed batch {i//batch_size + 1} of {len(chunks)//batch_size + 1}")
-        time.sleep(30) # to avoid rate limits
+        time.sleep(2) # to avoid rate limits
         
     
     
@@ -69,7 +69,7 @@ def main():
     # chunking the files
     print("Splitting documents into chunks...")
     chunks = split__documents(documents)
-    chunks = chunks[0:100] # for testing, rate limit.
+    chunks = chunks[0:50] # for testing, rate limit.
 
     # embedding
     print("Creating embeddings and storing in vector database...")

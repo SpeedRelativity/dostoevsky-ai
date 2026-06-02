@@ -16,8 +16,12 @@ pip install langchain langchain-community langchain_text_splitters langchain-goo
 
 Next, I wrote scrit for ingestion of the text files.
 
-But Im running into a rate limit problem. The free tier of gemini-embedding-001 only allows 100 requests/minute. I am trying to embed 5816 chunks at once.
+# Issue#1 : Rate Limiting Problem
+
+Im running into a rate limit problem. The free tier of gemini-embedding-001 only allows 100 requests/minute. I am trying to embed 5816 chunks at once.
 
 So solution for this is to create a batching system and wait in between. I will build this project FREE of cost, even though the whole thing would cost me a few cents if I paid.
 
 So the idea is I import time, create a for loop that creates batches and then runs the vector store function and has a sleep/wait timer.
+
+![ingestion pipeline complete](/screenshots/pipeline_complete_console.png)
