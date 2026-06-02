@@ -16,28 +16,27 @@ pip install langchain langchain-community langchain_text_splitters langchain-goo
 
 Next, I wrote scrit for ingestion of the text files.
 
-# Issue#1 : Rate Limiting Problem
-
-Im running into a rate limit problem. The free tier of gemini-embedding-001 only allows 100 requests/minute. I am trying to embed 5816 chunks at once.
+But Im running into a rate limit problem. The free tier of gemini-embedding-001 only allows 100 requests/minute. I am trying to embed 5816 chunks at once.
 
 So solution for this is to create a batching system and wait in between. I will build this project FREE of cost, even though the whole thing would cost me a few cents if I paid.
 
 So the idea is I import time, create a for loop that creates batches and then runs the vector store function and has a sleep/wait timer.
 
-![ingestion pipeline complete](/screenshots/pipeline_complete_console.png)
+`I think its working`
+![batching](/screenshots/batching_screenshot.png)
 
-# THE SOLUTION TO THE RATE LIMIT PROBLEM
+# Step 3: Creating the feeder for LLM
 
-So it turns out I was wrong. I'm sending requests of 50 chunks in 1 batch, but I'm doing a sleep(32) seconds, which is wasting time.
-I need to have a token aware system that is sending 50 x 100 batches, since 100 batches = 100 requests, under the API rate limit.
-So I need a system that is aware of the tokens and waits before sending more requests. I tried optimizing it but it is still slow. Fastest I can get it is 50 minutes and I dont want to wait 50 minutes, so I just upgraded my google plan. 1M tokens/minute rate now. We chill.
+Some new dependencies were added
+`pip install fastapi uvicorn`
 
-It broke after 20/30 batches, so I truncated the DB on supabase, then re-ran with 250 chunks per batch, and a 3 second wait timer. No retry function since this is a one time thing.
+So now that the retrieval was working with a hard coded query, the next step was to get a query on the API endpoint from the user and feed that to the LLM,
 
-![ingesting](image.png)
+for that I had to import ChatGoogleGenerativeAI and setup a client, then combine the context(chunks) from the user query and the system prompt then feed that into the LLM which returned back a 200 OK response. Ready to move onto the next step.
 
-# The Retrieval Pipeline
+![fastAPI working](fastapi_test.png)
 
-I used the same embedding model and connected to the same supabase vector store. I ran a simple "does god exist?" query and it worked. I got a response that was relevant to the question, and the source was from the books of Dostoevsky, which is what I wanted.
+# Step 4: The UI
 
-![result](image-1.png)
+I'm creating a Next.js app for the chat user interface.
+`npx create-next-app@latest ui`
