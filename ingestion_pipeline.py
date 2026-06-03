@@ -8,8 +8,6 @@ from langchain_google_genai import GoogleGenerativeAIEmbeddings
 from langchain_community.vectorstores import SupabaseVectorStore
 from supabase import create_client
 
-from concurrent.futures import ThreadPoolExecutor, as_completed
-
 import time
 
 

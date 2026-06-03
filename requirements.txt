@@ -4,3 +4,7 @@ langchain_text_splitters
 langchain-google-genai
 supabase
 python-dotenv
+fastapi
+uvicorn
+pydantic
+

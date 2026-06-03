@@ -40,3 +40,7 @@ for that I had to import ChatGoogleGenerativeAI and setup a client, then combine
 
 I'm creating a Next.js app for the chat user interface.
 `npx create-next-app@latest ui`
+
+I've removed the scafoolding in page.tsx and added 'use client'; to make it a client component, we need to do this because without it, we cannot useState or other react hooks. This is because Next.js uses server components by default, and we need to explicitly tell it that this component is a client component and renders on the client side.
+
+Now I'm just doing React stuff, simple UI with a input box, a send button and useState to store the user query and the response from the LLM. I will connect this to the API endpoint next.
