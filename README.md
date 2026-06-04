@@ -6,7 +6,7 @@ Below is the doucmentation of the steps I took to build out this project.
 
 90% of the code is written by me, I only used AI generated code for the UI design and tailwind CSS classes because that is mundane work and sometimes when I got stuck.
 
-GO TRY IT OUT: https://dostoevsky-ai.onrender.com
+GO TRY IT OUT: https://dostoevsky-ai.vercel.app/
 
 ![alt text](image-3.png)
 

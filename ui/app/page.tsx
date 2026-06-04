@@ -64,10 +64,11 @@ export default function Home() {
         {/* Header */}
         <header className="text-center mb-10 border-b border-[#c9b896] pb-8">
           <h1 className="text-4xl sm:text-5xl font-bold tracking-tight text-[#2b211a]">
-            Fyodor Dostoevsky
+            Fyodor Dostoevsky AI
           </h1>
           <p className="mt-3 text-base sm:text-lg italic text-[#6b5844]">
-            A guide for the troubled soul
+            If its taking a while, please wait (I have free backend server, its
+            slow...)
           </p>
         </header>
 
