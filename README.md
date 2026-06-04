@@ -6,6 +6,8 @@ Below is the doucmentation of the steps I took to build out this project.
 
 95% of the code is written by me, I only used AI for the UI design and tailwind CSS classes because that is mundane work.
 
+GO TRY IT OUT: https://dostoevsky-ai.onrender.com
+
 ![alt text](image-3.png)
 
 # How I built it
@@ -93,3 +95,19 @@ Next I added some tests with `pytest` so I can prove the `/chat` endpoint actual
 
 Here is a screenshot of the test cases passing and you can view the tests at `tests/`:
 ![testing](image-6.png)
+
+# CI
+
+Once the tests were passing locally, I wanted them to run automatically every time I push, so I set up CI with GitHub Actions. I added a workflow file at `.github/workflows/ci.yml` that triggers on every push and pull request. It spins up a fresh Ubuntu machine, installs Python 3.13, installs my `requirements.txt`, and runs `python -m pytest`. The one gotcha was that my `retrieval_pipeline.py` builds the Supabase and Gemini clients at import time, which needs the env vars to exist — but my `.env` is gitignored so it's not on GitHub. Since my tests mock all the real network calls anyway, I just fed the workflow dummy env values so the import succeeds without real secrets. First push, green check. Now every commit gets tested automatically and there's a passing badge on the repo.
+
+![CI passing](image-7.png)
+
+# Deployment
+
+The app is two separate pieces that deploy to two different places: the FastAPI backend and the Next.js frontend. The backend goes on Render (it needs a real always-on Python server) and the frontend goes on Vercel (made by the Next.js team, so it just works). Order matters — I deploy the backend first to get its public URL, then point the frontend at it.
+
+For the backend on Render I use a native Python deploy: build with `pip install -r requirements.txt` and start with `uvicorn retrieval_pipeline:app --host 0.0.0.0 --port $PORT`. The `$PORT` is important — Render assigns the port, so I can't hardcode 8000. My secrets (`SUPABASE_URL`, `SUPABASE_KEY`, `GOOGLE_API_KEY`) don't live in the repo, so I paste them into Render's environment variables dashboard instead.
+
+One thing I learned about the free tier: Render spins the server down after ~15 minutes of inactivity, so the first request after that has a ~30-60s cold start. To keep it warm for demos I set up a scheduled keep-alive ping that hits the backend every few minutes.
+
+For the frontend on Vercel, I set `NEXT_PUBLIC_API_URL` to the Render backend URL in Vercel's environment variables, so the same code that ran against localhost now talks to the deployed backend without any code changes. Last step is tightening the backend CORS to only allow my Vercel domain instead of the wildcard `*` I used during development.
