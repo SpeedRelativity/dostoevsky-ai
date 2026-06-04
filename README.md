@@ -4,7 +4,7 @@ The council is a RAG system that has been fed philosophers and various deep thin
 
 Below is the doucmentation of the steps I took to build out this project.
 
-95% of the code is written by me, I only used AI for the UI design and tailwind CSS classes because that is mundane work.
+90% of the code is written by me, I only used AI generated code for the UI design and tailwind CSS classes because that is mundane work and sometimes when I got stuck.
 
 ![alt text](image-3.png)
 
