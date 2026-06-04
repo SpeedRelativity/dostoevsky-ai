@@ -28,8 +28,9 @@ vector_store = SupabaseVectorStore(
 # feed chunks and query to LLM.
 
 from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
 from langchain_google_genai import ChatGoogleGenerativeAI
-from langchain_core.messages import HumanMessage, SystemMessage
+from langchain_core.messages import AIMessage, HumanMessage, SystemMessage
 from pydantic import BaseModel
 
 
@@ -37,23 +38,44 @@ from pydantic import BaseModel
 
 app = FastAPI()
 
-system_message = """You are a philosophical guide grounded in Dostoevsky's work. \
-Answer the user's question directly and helpfully, drawing on the provided context. \
-Be insightful but CONCISE — 3 to 5 sentences. Lead with the actual answer, not preamble. \
-Speak in clear, plain language a normal person understands. No theatrical narration, \
-no "Ah, the year 2026!" openings, no rhetorical flourishes. \
-If the question is unrelated to philosophy or the human condition, say it's outside your scope.
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_methods=["*"],
+    allow_headers=["*"],)
 
-Use the provided passages when relevant. If they don't help, answer from Dostoevsky's broader ideas rather than forcing them in."""
+system_message = (
+    "You are Fyodor Dostoevsky himself, speaking directly to a troubled soul who "
+    "has come to you for guidance. Speak in the first person as 'I', and address the "
+    "seeker warmly as 'you'. Never refer to Dostoevsky in the third person — you ARE him. "
+    "Draw on your novels, your characters, and your hard-won understanding of suffering, "
+    "faith, freedom, and the human heart. Be a guide: compassionate but unflinching, "
+    "offering wisdom that provokes reflection. Use the provided context to ground your "
+    "counsel. Keep your reply short if it answers the question. Otherwise, keep it under 150 words and always finish your final thought — "
+    "never stop mid-sentence. If a question falls outside human and philosophical "
+    "matters, gently say it lies beyond your concern."
+    "Speak in clear, warm, modern English that an everyday person can easily follow. "
+    "Be profound but plain — short sentences, concrete words, no archaic or flowery phrasing. "
+    "Sound like a wise friend talking over coffee, not a 19th-century novel. "
+)
 
 LLM = ChatGoogleGenerativeAI(
         model="gemini-2.5-flash",
         google_api_key=os.getenv("GOOGLE_API_KEY"),
         max_output_tokens=800,
-        temperature=0.7)
+        temperature=0.7,
+        thinking_budget=0)
+
+class Turn(BaseModel):
+    role: str
+    content: str
 
 class Query(BaseModel):
     query: str
+    history: list[Turn] = []
+    session_id: str  | None = None
+
+
 
 @app.post("/chat")
 def chat(input: Query):
@@ -62,11 +84,23 @@ def chat(input: Query):
     # now we setup the LLM and feed chunk + query as context to the LLM
     context = "Some context:" + "\n".join([chunk.page_content for chunk in relevant_chunks])
     combined = f"{context}\n\nUser query: {input.query}"
-    messages = [
-        SystemMessage(content=system_message),
-        HumanMessage(content=combined)
-    ]
+  
+
+    messages = [SystemMessage(content=system_message)]
+    for turn in input.history:
+        if turn.role == "user":
+            messages.append(HumanMessage(content=turn.content))
+        else:
+            messages.append(AIMessage(content=turn.content))
+    messages.append(HumanMessage(content=combined))
     response = LLM.invoke(messages)
+
+    try:
+        supabase_client.table("query_logs").insert({
+            "question": input.query,
+            "session_id": input.session_id}).execute()
+    except Exception as e:
+        print(f"Failed to log query:{e}")
     return response.content
 
 
