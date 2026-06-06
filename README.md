@@ -111,3 +111,7 @@ For the backend on Render I use a native Python deploy: build with `pip install 
 One thing I learned about the free tier: Render spins the server down after ~15 minutes of inactivity, so the first request after that has a ~30-60s cold start. To keep it warm for demos I set up a scheduled keep-alive ping that hits the backend every few minutes.
 
 For the frontend on Vercel, I set `NEXT_PUBLIC_API_URL` to the Render backend URL in Vercel's environment variables, so the same code that ran against localhost now talks to the deployed backend without any code changes. Last step is tightening the backend CORS to only allow my Vercel domain instead of the wildcard `*` I used during development.
+
+# FINISHED
+
+project is finished. Good job, me.
